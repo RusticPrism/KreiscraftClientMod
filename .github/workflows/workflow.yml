@@ -8,8 +8,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: softprops/action-gh-release@v2
+      - uses: CupOfTea696/gh-action-auto-release@v1.0.0
         with:
-          name: Release $[{{ github.ref_name }}
+          title: "Release: $version"
+          tag: "v$semver"
+          draft: false
+          regex: "/^Release: #{semver}$/i"
         env:
-          GITHUB_TOKEN ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

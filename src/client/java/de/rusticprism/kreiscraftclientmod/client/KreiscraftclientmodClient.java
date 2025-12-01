@@ -49,7 +49,8 @@ public class KreiscraftclientmodClient implements ClientModInitializer {
                     freecaminstalled = true;
                     File file = new File(FabricLoader.getInstance().getConfigDir().toFile(), "freecam.json5");
                     try {
-                        freecam = JsonParser.parseReader(new FileReader(file)).getAsJsonObject().getAsJsonObject("collision").getAsJsonPrimitive("ignoreAll").getAsBoolean();
+                        freecam = JsonParser.parseReader(new FileReader(file)).getAsJsonObject()
+                                .getAsJsonObject("collision").getAsJsonPrimitive("ignoreAll").getAsBoolean();
                     } catch (FileNotFoundException e) {
                         log.error(e.fillInStackTrace());
                         return;
@@ -77,32 +78,34 @@ public class KreiscraftclientmodClient implements ClientModInitializer {
 
     public void checkForFreecam() {
         AtomicInteger i = new AtomicInteger();
-            ClientTickEvents.START_CLIENT_TICK.register(mc -> {
-                if (mc.getNetworkHandler() == null) {
+        ClientTickEvents.START_CLIENT_TICK.register(mc -> {
+            if (mc.getNetworkHandler() == null) {
+                return;
+            }
+            log.atDebug().log(i);
+            if (i.get() >= 200) {
+                checkForXray();
+                if (!freecaminstalled) {
                     return;
                 }
-                log.atDebug().log(i);
-                if (i.get() >= 200) {
-                    checkForXray();
-                    if (!freecaminstalled) {
-                        return;
+                File file = new File(FabricLoader.getInstance().getConfigDir().toFile(), "freecam.json5");
+                try {
+                    if (JsonParser.parseReader(new FileReader(file)).getAsJsonObject().getAsJsonObject("collision")
+                            .getAsJsonPrimitive("ignoreAll").getAsBoolean()) {
+                        PacketByteBuf buf = new PacketByteBuf(io.netty.buffer.Unpooled.buffer());
+                        buf.writeString("freecam:true");
+                        ClientPlayNetworking.send(new PluginMessagePacket(buf));
                     }
-                    File file = new File(FabricLoader.getInstance().getConfigDir().toFile(), "freecam.json5");
-                    try {
-                        if (JsonParser.parseReader(new FileReader(file)).getAsJsonObject().getAsJsonObject("collision").getAsJsonPrimitive("ignoreAll").getAsBoolean()) {
-                            PacketByteBuf buf = new PacketByteBuf(io.netty.buffer.Unpooled.buffer());
-                            buf.writeString("freecam:true");
-                            ClientPlayNetworking.send(new PluginMessagePacket(buf));
-                        }
-                    } catch (FileNotFoundException e) {
-                        log.error(e.fillInStackTrace());
-                        return;
-                    }
-                    i.set(0);
+                } catch (FileNotFoundException e) {
+                    log.error(e.fillInStackTrace());
+                    return;
                 }
-                i.getAndIncrement();
-            });
+                i.set(0);
+            }
+            i.getAndIncrement();
+        });
     }
+
     public void checkForXray() {
         MinecraftClient.getInstance().getResourcePackManager().getEnabledProfiles().forEach(s -> {
             log.atDebug().log(s);
@@ -112,7 +115,9 @@ public class KreiscraftclientmodClient implements ClientModInitializer {
                 ClientPlayNetworking.send(new PluginMessagePacket(buf));
                 return;
             }
-            if(s.getDescription().getLiteralString() != null && (s.getDescription().getLiteralString().toLowerCase().contains("xray") || s.getDescription().getLiteralString().toLowerCase().contains("x-ray")))  {
+            if (s.getDescription().getLiteralString() != null
+                    && (s.getDescription().getLiteralString().toLowerCase().contains("xray")
+                            || s.getDescription().getLiteralString().toLowerCase().contains("x-ray"))) {
                 PacketByteBuf buf = new PacketByteBuf(io.netty.buffer.Unpooled.buffer());
                 buf.writeString("xray:" + s.getId().replaceAll("file/", ""));
                 ClientPlayNetworking.send(new PluginMessagePacket(buf));

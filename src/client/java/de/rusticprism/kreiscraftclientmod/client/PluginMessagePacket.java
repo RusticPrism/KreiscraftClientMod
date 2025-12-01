@@ -8,21 +8,23 @@ import net.minecraft.util.Identifier;
 import java.util.Arrays;
 import java.util.Objects;
 
-public class PluginMessagePacket implements CustomPayload{
+public class PluginMessagePacket implements CustomPayload {
 
     private final byte[] data;
 
-    public PluginMessagePacket(byte[] data) {
-        this.data = data;
-    }
-    public PluginMessagePacket(ByteBuf buf) {
-        this(getWrittenBytes(buf));
-    }
     public static Id<PluginMessagePacket> ID = new Id<>(Identifier.of("kreiscraft", "mod_checker"));
 
     public static PacketCodec<ByteBuf, PluginMessagePacket> CODEC = PacketCodec.ofStatic(
             (buf, value) -> writeBytes(buf, value.data),
             PluginMessagePacket::new);
+
+    public PluginMessagePacket(byte[] data) {
+        this.data = data;
+    }
+
+    public PluginMessagePacket(ByteBuf buf) {
+        this(getWrittenBytes(buf));
+    }
 
     @Override
     public Id<? extends CustomPayload> getId() {
@@ -32,20 +34,19 @@ public class PluginMessagePacket implements CustomPayload{
     private static void writeBytes(ByteBuf buf, byte[] v) {
         buf.writeBytes(v);
     }
+
     private static byte[] getWrittenBytes(ByteBuf buf) {
         byte[] bs = new byte[buf.readableBytes()];
         buf.readBytes(bs);
         return bs;
     }
 
-    public byte[] getData() {
-        return data;
-    }
-
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         PluginMessagePacket that = (PluginMessagePacket) o;
         return Objects.deepEquals(data, that.data);
     }

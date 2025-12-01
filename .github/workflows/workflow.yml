@@ -1,27 +1,41 @@
-name: "Auto Release"
-
+name: Autorelease
 on:
   push:
     branches:
-      - "master"
-
+      - master
 jobs:
-  pre-release:
-    name: "Pre Release"
-    runs-on: "ubuntu-latest"
+  build:
+    runs-on: ubuntu-latest
 
     steps:
-      # ...
-      - name: "Build & test"
-        run: |
-          echo "done!"
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - uses: "marvinpinto/action-automatic-releases@latest"
+      - name: Set up JDK
+        uses: actions/setup-java@v5
         with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "latest"
-          prerelease: true
-          title: "Development Build"
-          files: |
-            LICENSE.txt
-            *.jar
+          distribution: 'temurin'
+          java-version: '24'
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x gradlew
+
+      - name: Build with Gradle
+        run: ./gradlew build
+
+      - name: Upload JAR artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: jar
+          path: build/libs/*.jar
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: CupOfTea696/gh-action-auto-release@v1.0.0
+        with:
+          title: "Release: ${{ github.ref_name }}"
+          tag: 'latest'
+          draft: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

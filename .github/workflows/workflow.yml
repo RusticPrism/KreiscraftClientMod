@@ -13,6 +13,6 @@ jobs:
           name: "Release: ${{ github.ref_name }}"
           tag_name: 'latest'
           draft: false
-          files: build/libs/KreiscraftClientMod-1.0.0.jar
+          files: build/libs/KreiscraftClientMod-latest.jar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
